@@ -740,6 +740,11 @@
         "@deepseek-ai/.+"
       ]
     },
+    "apps/desktop": {
+      "project": [
+        "electron/**/*.js"
+      ]
+    },
     "packages/client/modules": {
       "entry": [
         "tests/**/*.spec.ts"
@@ -780,7 +785,8 @@
     },
     "packages/bundle/web-app": {
       "ignoreDependencies": [
-        "@deepseek-ai/.+"
+        "@deepseek-ai/.+",
+        "electron"
       ]
     }
   }

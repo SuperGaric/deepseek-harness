@@ -135,6 +135,17 @@
         surfaceContext: true
         trustedHosts: !!js ctx.webStartup.trustedHosts
 
+    # Native desktop window over the same loopback server, opt-in per
+    # invocation through --desktop. The shell and this process stop together:
+    # closing the window stops the launcher; Ctrl+C closes the window. Without
+    # a resolvable Electron install the row warns and the browser URL keeps
+    # working.
+    - id: web-desktop
+      name: '@deepseek-ai/dsh-web-app/desktop'
+      inject: [webStartup]
+      config:
+        enabled: !!js ctx.webStartup.desktop ?? false
+
     # The client-plugin reload chain, always mounted: it is idle until a
     # rebuild watcher (pnpm run dev:web) actually rewrites client bundles. It
     # is a row rather than a child of web-runtime because its node half is a
