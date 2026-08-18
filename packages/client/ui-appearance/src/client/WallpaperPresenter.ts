@@ -1,9 +1,8 @@
 /**
  * Wallpaper DOM applier: projects the durable appearance settings onto
- * body-scoped CSS variables consumed by the package's wallpaper stylesheet
- * (body::before/::after layers). Pure DOM writes, no React involvement; the
- * presenter only ever retracts what it wrote itself, so foreign inline styles
- * survive.
+ * document-level CSS variables consumed by the package's wallpaper stylesheet
+ * (the html canvas). Pure DOM writes, no React involvement; the presenter only
+ * ever retracts what it wrote itself, so foreign inline styles survive.
  */
 import type { AppearanceSettings } from '../appearance-settings.ts'
 import { WALLPAPER_PRESETS } from './presets.ts'
@@ -14,14 +13,12 @@ export const IMAGE_PROPERTY = '--dshw-image'
 export const SIZE_PROPERTY = '--dshw-size'
 /** CSS custom property carrying the background-repeat value. */
 export const REPEAT_PROPERTY = '--dshw-repeat'
-/** CSS custom property carrying the blur length. */
-export const BLUR_PROPERTY = '--dshw-blur'
 /** CSS custom property carrying the dim overlay alpha. */
 export const DIM_PROPERTY = '--dshw-dim'
 
-/** Custom properties this presenter owns on body (its retraction set). */
+/** Custom properties this presenter owns on the document root (its retraction set). */
 export const OWNED_PROPERTIES: readonly string[] = [
-  IMAGE_PROPERTY, SIZE_PROPERTY, REPEAT_PROPERTY, BLUR_PROPERTY, DIM_PROPERTY,
+  IMAGE_PROPERTY, SIZE_PROPERTY, REPEAT_PROPERTY, DIM_PROPERTY,
 ]
 
 /** Escape a value embedded in a CSS url('…') literal. */
@@ -42,26 +39,25 @@ export function wallpaperImageValue(settings: AppearanceSettings): string {
 /** Applies appearance settings to the document; one instance per plugin fiber. */
 export class WallpaperPresenter {
   /**
-   * Project settings onto the document: rewrite the five body custom
-   * properties from the wallpaper state (tile maps to `auto` size + repeat;
-   * anything else keeps the image fit). Blur and dim are always written so a
-   * settings change always updates the layer.
+   * Project settings onto the document root: rewrite the four wallpaper custom
+   * properties (tile maps to `auto` size + repeat). The stylesheet paints them
+   * on the html canvas, behind every surface, so no settings change can cover
+   * the app's content.
    * @param settings - complete appearance settings from the settings scope.
    */
   apply(settings: AppearanceSettings): void {
     const { wallpaper } = settings
-    const body = document.body
+    const root = document.documentElement
     const tile = wallpaper.kind !== 'none' && wallpaper.fit === 'tile'
-    body.style.setProperty(IMAGE_PROPERTY, wallpaperImageValue(settings))
-    body.style.setProperty(SIZE_PROPERTY, tile ? 'auto' : wallpaper.fit)
-    body.style.setProperty(REPEAT_PROPERTY, tile ? 'repeat' : 'no-repeat')
-    body.style.setProperty(BLUR_PROPERTY, `${wallpaper.blur}px`)
-    body.style.setProperty(DIM_PROPERTY, String(wallpaper.dim))
+    root.style.setProperty(IMAGE_PROPERTY, wallpaperImageValue(settings))
+    root.style.setProperty(SIZE_PROPERTY, tile ? 'auto' : wallpaper.fit)
+    root.style.setProperty(REPEAT_PROPERTY, tile ? 'repeat' : 'no-repeat')
+    root.style.setProperty(DIM_PROPERTY, String(wallpaper.dim))
   }
 
   /** Retract every custom property this presenter wrote. */
   dispose(): void {
-    const body = document.body
-    for (const name of OWNED_PROPERTIES) body.style.removeProperty(name)
+    const root = document.documentElement
+    for (const name of OWNED_PROPERTIES) root.style.removeProperty(name)
   }
 }

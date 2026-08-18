@@ -25,9 +25,8 @@ describe('AppearanceSettingsSchema', () => {
     }
     expect(() => parse({ wallpaper: { fit: 'zoom' } })).toThrow()
     expect(() => parse({ surface: 'frosted' })).toThrow()
-    expect(() => parse({ wallpaper: { blur: 25 } })).toThrow()
-    expect(() => parse({ wallpaper: { blur: -1 } })).toThrow()
     expect(() => parse({ wallpaper: { dim: 0.8 } })).toThrow()
+    expect(() => parse({ wallpaper: { dim: -0.1 } })).toThrow()
   })
 
   it('keeps the persisted enumerations in sync with their type unions', () => {

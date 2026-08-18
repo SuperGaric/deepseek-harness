@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-/** AppearancePage behavior: preset selection, URL/local applies, fit/blur/dim
+/** AppearancePage behavior: preset selection, URL/local applies, fit/dim
  * writes, surface cards, and reset — all through the injected face. */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
@@ -26,7 +26,6 @@ const COPY: Record<string, string> = {
   'fit.cover': '铺满',
   'fit.contain': '适应',
   'fit.tile': '平铺',
-  'blur.title': '墙纸模糊',
   'dim.title': '压暗遮罩',
   'surface.title': '面板透明',
   'surface.solid': '不透明',
@@ -110,13 +109,11 @@ describe('AppearancePage', () => {
     expect(b.setWallpaper).toHaveBeenCalledWith({ kind: 'local', value: 'C:\\pics\\wall.jpg' })
   })
 
-  it('persists fit, blur, and dim changes', () => {
+  it('persists fit and dim changes', () => {
     const b = mount()
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'tile' } })
     expect(b.setWallpaper).toHaveBeenCalledWith({ fit: 'tile' })
-    const [blur, dim] = screen.getAllByRole('slider')
-    fireEvent.change(blur!, { target: { value: '8' } })
-    expect(b.setWallpaper).toHaveBeenCalledWith({ blur: 8 })
+    const [dim] = screen.getAllByRole('slider')
     fireEvent.change(dim!, { target: { value: '0.3' } })
     expect(b.setWallpaper).toHaveBeenCalledWith({ dim: 0.3 })
   })

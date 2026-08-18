@@ -12,9 +12,9 @@ Web GUI 此前没有任何面向用户的背景能力:表面 token(`--dsw-alias-
 
 新增客户端插件包 `packages/client/ui-appearance`,以三个独立图层承载整个能力,可自由叠加:
 
-1. **墙纸层**:包内提供 `src/styles/wallpaper.css`,由壳层 base.css 在所有 ui-theme token 样式表之后引入。该样式表读取五个 body 作用域自定义属性(`--dshw-image/size/repeat/blur/dim`),把 `body::before`(图片,`filter` 模糊)与 `body::after`(压暗遮罩)绘制为 `position: fixed; z-index: -1` 层。浏览器半的 `WallpaperPresenter` 依据持久化分节写入这些属性,并在释放时只收回自己写入的内容——与 ui-layout `ThemePresenter` 的纪律一致。这些层位于应用自身表面之后:负 z-index 的定位伪元素绘制在画布(即 body 背景——因 html 不带背景而传播)之上、流入内容背景之下——因此墙纸恰好在 token 透明度允许透出的地方可见,在不透明表面下不可见,无需任何 DOM 重构。
+1. **墙纸层**:包内提供 `src/styles/wallpaper.css`,由壳层 base.css 在所有 ui-theme token 样式表之后引入。该样式表读取四个文档级自定义属性(`--dshw-image/size/repeat/dim`),把图片与压暗遮罩作为 `html` 画布背景绘制,因此位于所有表面之后,绝不会遮挡应用。浏览器半的 `WallpaperPresenter` 依据持久化分节写入这些属性,并在释放时只收回自己写入的内容——与 ui-layout `ThemePresenter` 的纪律一致。`solid` 模式下 body 自身的不透明底色盖住画布,`translucent`/`glass` 模式下透明 token 覆盖层则让画布透出。
 2. **表面透明层**:面板模式(`solid`/`translucent`/`glass`)映射为 `theme.overrideTokens('ui-appearance', …)` 覆盖层,作用于六个表面别名,值以各调色板静态来源做 `color-mix(in srgb, var(--dsw-static-…) N%, transparent)`,因此随当前配色方案自动适配、无需重算,内置亮暗两套主题都不需要第三方主题参与。
-3. **持久化分节**:`ui-appearance` settings 命名空间(墙纸 kind/value/fit/blur/dim 与面板模式)在宿主侧注册,浏览器侧经 `ctx.settingsScope` 绑定。api-proxy 的 `WEB_SETTINGS_NAMESPACES` allowlist 接纳该命名空间——这是任何 Settings 注册可被远程读写的显式决策点。
+3. **持久化分节**:`ui-appearance` settings 命名空间(墙纸 kind/value/fit/dim 与面板模式)在宿主侧注册,浏览器侧经 `ctx.settingsScope` 绑定。api-proxy 的 `WEB_SETTINGS_NAMESPACES` allowlist 接纳该命名空间——这是任何 Settings 注册可被远程读写的显式决策点。
 
 墙纸来源为渐变预设(id 持久化)、图片 URL(浏览器直接加载)与本地文件路径。本地文件不需要文件 RPC:宿主半注册 `/dsh-wallpaper` 前缀路由,每个请求读取分节中当前的路径,输出 `fs.readBytes` 的字节(≤ 20 MiB、按扩展名推断内容类型、`no-store`)。设置写入是唯一的线上面——路由读取的正是设置页写入的同一个分节。
 
@@ -22,7 +22,7 @@ Web GUI 此前没有任何面向用户的背景能力:表面 token(`--dsw-alias-
 
 **宿主文件读取 RPC(ApiProxy 方法或 Typert remote)。** 否决:为服务一张图片,要新增 wire 方法、请求/响应 schema、特权方法条目,并在宿主信任边界上增加一个任意路径读取面。路由直接读取已持久化的路径,把爆炸半径限制在功能内部,且零新增 wire 词汇;代价(客户端对缺失文件没有错误反馈)记为已知限制。
 
-**复用 `body` 自身的背景(html/body background-image)。** 否决:base.css 的 body 背景就是主题的画布(因 html 不带背景而传播),半透明表面位于其上,body 层的图片会被底色盖住。`z-index: -1` 的伪元素层绘制在画布之上、内容背景之下——这正是墙纸需要的层叠位置,且无需改动壳层 DOM。
+**复用 `body` 自身的背景(html/body background-image)。** 否决:base.css 的 body 背景是主题的底色、位于画布之上;把墙纸画在 `html` 上则无需任何层叠技巧就让它位于 body 之后。最初 `body::before`/`body::after` 加 `z-index: -1` 的方案在真实壳层里把应用盖住后已弃用——负 z-index 伪元素对壳层的层叠上下文很脆弱,画布背景才是稳妥选择。
 
 **注册第三方主题而非 `overrideTokens`。** 否决:主题是整板调色定义,由偏好选择;面板模式是必须与用户主题选择叠加的单一 token 维度,这正是覆盖层的用途。
 
@@ -30,6 +30,6 @@ Web GUI 此前没有任何面向用户的背景能力:表面 token(`--dsw-alias-
 
 ## Consequences
 
-功能以自包含包的形式落地,产品 DOM 与主题注册表零改动:停止插件 fiber 即收回全部图层,壳层只多一条 base.css import 与 bundle 名册行。层叠模型意味着墙纸只在半透明表面透出——这是预期的组合方式,但用户在不透明面板下选墙纸会看不到任何效果,直到切换面板模式,因此设置页文案明确说明二者的组合关系。
+功能以自包含包的形式落地,产品 DOM 与主题注册表零改动:停止插件 fiber 即收回全部图层,壳层只多一条 base.css import 与 bundle 名册行。因为墙纸就是 html 画布背景,它绝不会遮挡内容;只在半透明表面透出——这是预期的组合方式,但用户在不透明面板下选墙纸会看不到任何效果,直到切换面板模式,因此设置页文案明确说明二者的组合关系。
 
 api-proxy allowlist 现在点名 `ui-appearance`;任何未来的 settings 命名空间仍须显式准入,两个包的 README 都记录了这份名单。路由每次请求都重读分节,因此墙纸变更在下次抓取即可见,无需缓存失效(由 `no-store` 保证)。本地文件始终留在宿主侧——浏览器除了自己写进 settings 的路径外不会收到任何文件系统路径,路由把读取上限在 20 MiB。

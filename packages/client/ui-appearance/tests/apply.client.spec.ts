@@ -14,7 +14,7 @@ import type { AppearancePageInjected } from '@deepseek-ai/dsh-client-ui-appearan
 import type { ThemeTokenOverrides } from '@deepseek-ai/dsh-client-ui-theme/client'
 import { AppearancePage } from '../src/client/AppearancePage.tsx'
 import type { createAppearanceStore } from '../src/client/settings-store.ts'
-import { BLUR_PROPERTY, DIM_PROPERTY, IMAGE_PROPERTY, SIZE_PROPERTY } from '../src/client/WallpaperPresenter.ts'
+import { DIM_PROPERTY, IMAGE_PROPERTY, SIZE_PROPERTY } from '../src/client/WallpaperPresenter.ts'
 import {
   APPEARANCE_SETTINGS_NAMESPACE, AppearanceSettingsSchema, DEFAULT_SURFACE, DEFAULT_WALLPAPER,
 } from '../src/appearance-settings.ts'
@@ -129,16 +129,15 @@ describe('ui-appearance apply', () => {
 
   it('projects the scope snapshot onto the DOM, the token layer, and the store', async () => {
     const b = await bench()
-    b.setHostSection({ wallpaper: { kind: 'url', value: 'https://x.test/a.png', fit: 'cover', blur: 4, dim: 0.2 }, surface: 'glass' })
+    b.setHostSection({ wallpaper: { kind: 'url', value: 'https://x.test/a.png', fit: 'cover', dim: 0.2 }, surface: 'glass' })
     declareSection(b.slots)
     await b.ctx.plugin({ inject: [...inject], apply }).await()
     await vi.waitFor(() => {
-      expect(document.body.style.getPropertyValue(IMAGE_PROPERTY)).toBe("url('https://x.test/a.png')")
+      expect(document.documentElement.style.getPropertyValue(IMAGE_PROPERTY)).toBe("url('https://x.test/a.png')")
     })
-    expect(document.body.style.getPropertyValue(SIZE_PROPERTY)).toBe('cover')
-    expect(document.body.style.getPropertyValue(BLUR_PROPERTY)).toBe('4px')
-    expect(document.body.style.getPropertyValue(DIM_PROPERTY)).toBe('0.2')
-    const layer = b.overrideTokens.mock.calls[0]![1] as ThemeTokenOverrides
+    expect(document.documentElement.style.getPropertyValue(SIZE_PROPERTY)).toBe('cover')
+    expect(document.documentElement.style.getPropertyValue(DIM_PROPERTY)).toBe('0.2')
+    const layer = b.overrideTokens.mock.calls[0]![1]
     expect(layer['--dsw-alias-bg-base']?.light).toContain('55%')
 
     const { instance } = faceOf(b.slots)
@@ -155,7 +154,7 @@ describe('ui-appearance apply', () => {
     const { face } = faceOf(b.slots)
     face.setSurface('translucent')
     await vi.waitFor(() => {
-      const layer = b.overrideTokens.mock.calls[0]![1] as ThemeTokenOverrides
+      const layer = b.overrideTokens.mock.calls[0]![1]
       expect(layer['--dsw-specific-sidebar-fill']?.light).toContain('78%')
     })
     face.setSurface('solid')
@@ -221,16 +220,16 @@ describe('ui-appearance apply', () => {
 
   it('teardown retracts the DOM layer and the dictionaries; teardown without a declaration is quiet', async () => {
     const b = await bench()
-    b.setHostSection({ wallpaper: { kind: 'url', value: 'https://x.test/a.png', fit: 'cover', blur: 2, dim: 0.1 }, surface: 'translucent' })
+    b.setHostSection({ wallpaper: { kind: 'url', value: 'https://x.test/a.png', fit: 'cover', dim: 0.1 }, surface: 'translucent' })
     declareSection(b.slots)
     const fiber = b.ctx.plugin({ inject: [...inject], apply })
     await fiber.await()
     await vi.waitFor(() => {
-      expect(document.body.style.getPropertyValue(IMAGE_PROPERTY)).not.toBe('')
+      expect(document.documentElement.style.getPropertyValue(IMAGE_PROPERTY)).not.toBe('')
     })
     await fiber.dispose()
-    expect(document.body.style.getPropertyValue(IMAGE_PROPERTY)).toBe('')
-    expect(document.body.style.getPropertyValue(BLUR_PROPERTY)).toBe('')
+    expect(document.documentElement.style.getPropertyValue(IMAGE_PROPERTY)).toBe('')
+    expect(document.documentElement.style.getPropertyValue(DIM_PROPERTY)).toBe('')
     expect(b.slots.entries(SLOT)).toHaveLength(0)
     expect(b.locale.bind(NS)('wallpaper.title')).toBe('wallpaper.title')
 

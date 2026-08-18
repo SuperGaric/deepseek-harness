@@ -1,6 +1,6 @@
-﻿/**
+/**
  * Background & Appearance settings page registered into the settings section
- * seat: wallpaper source (presets, URL, local path), fit mode, blur and dim
+ * seat: wallpaper source (presets, URL, local path), fit mode, dim scrim, and
  * sliders, and the panel transparency mode. Selection follows the persisted
  * section from the slot store; drafts (URL/path text) are component-local.
  */
@@ -134,19 +134,6 @@ export function AppearancePage({
             <option key={option.id} value={option.id}>{t(option.labelKey)}</option>
           ))}
         </select>
-      </section>
-
-      <section className={css.section}>
-        <h3 className={css.title}>{t('blur.title')} {wallpaper.blur}px</h3>
-        <input
-          className={css.range}
-          type="range"
-          min={0}
-          max={24}
-          step={1}
-          value={wallpaper.blur}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => { setWallpaper({ blur: Number(event.target.value) }) }}
-        />
       </section>
 
       <section className={css.section}>

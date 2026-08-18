@@ -1,35 +1,18 @@
-/* Wallpaper layer: body-scoped variables driven by the appearance presenter.
-   The layer rides body::before/::after behind the app's own surfaces, so the
-   base token backgrounds (propagated from body to the canvas) stay untouched
-   and translucent token overrides reveal the wallpaper through them. */
+/* Wallpaper layer: painted on the html canvas, behind every surface, so it can
+   never cover the app. The base color under translucent surfaces is the static
+   palette token (light default, dark via :has on the body attribute); the dim
+   scrim is the first background layer over the image. */
 
-body {
-  --dshw-image: none;
-  --dshw-size: cover;
-  --dshw-repeat: no-repeat;
-  --dshw-blur: 0px;
-  --dshw-dim: 0;
+html {
+  background-color: var(--dsw-static-neutral-bluish-00);
+  background-image:
+    linear-gradient(rgb(10 12 16 / var(--dshw-dim, 0)), rgb(10 12 16 / var(--dshw-dim, 0))),
+    var(--dshw-image, none);
+  background-size: auto, var(--dshw-size, cover);
+  background-repeat: no-repeat, var(--dshw-repeat, no-repeat);
+  background-position: center, center;
 }
 
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-color: var(--dsw-alias-bg-base);
-  background-image: var(--dshw-image);
-  background-size: var(--dshw-size);
-  background-repeat: var(--dshw-repeat);
-  background-position: center;
-  filter: blur(var(--dshw-blur));
-}
-
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-color: rgb(10 12 16 / var(--dshw-dim));
+html:has(body[data-ds-dark-theme]) {
+  background-color: var(--dsw-static-neutral-bluish-950);
 }

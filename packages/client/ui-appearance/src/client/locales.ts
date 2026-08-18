@@ -23,7 +23,6 @@ export const zh = {
   'fit.cover': '铺满',
   'fit.contain': '适应',
   'fit.tile': '平铺',
-  'blur.title': '墙纸模糊',
   'dim.title': '压暗遮罩',
   'surface.title': '面板透明',
   'surface.solid': '不透明',
@@ -31,7 +30,7 @@ export const zh = {
   'surface.translucent': '半透明',
   'surface.translucentDesc': '面板半透明,透出墙纸',
   'surface.glass': '玻璃',
-  'surface.glassDesc': '面板更透,配合墙纸模糊呈现磨砂玻璃感',
+  'surface.glassDesc': '面板更透,呈现玻璃质感',
   'reset': '重置为默认外观',
   'hint': '墙纸与面板透明互不排斥,可自由叠加组合。',
 } as const
@@ -56,7 +55,6 @@ export const en: Record<keyof typeof zh, string> = {
   'fit.cover': 'Cover',
   'fit.contain': 'Contain',
   'fit.tile': 'Tile',
-  'blur.title': 'Wallpaper blur',
   'dim.title': 'Dim overlay',
   'surface.title': 'Panel transparency',
   'surface.solid': 'Solid',
@@ -64,7 +62,7 @@ export const en: Record<keyof typeof zh, string> = {
   'surface.translucent': 'Translucent',
   'surface.translucentDesc': 'Panels become translucent and reveal the wallpaper',
   'surface.glass': 'Glass',
-  'surface.glassDesc': 'More transparent; with wallpaper blur this reads as frosted glass',
+  'surface.glassDesc': 'More transparent; reads as a glass surface',
   'reset': 'Reset to default appearance',
   'hint': 'Wallpaper and panel transparency combine freely.',
 }

@@ -34,8 +34,6 @@ export interface WallpaperSettings {
   value: string
   /** Image fit mode for `url`/`local` wallpapers. */
   fit: WallpaperFit
-  /** Wallpaper blur in px (0–24). */
-  blur: number
   /** Scrim darkness 0–0.7, the readability overlay above the wallpaper. */
   dim: number
 }
@@ -49,7 +47,7 @@ export interface AppearanceSettings {
 
 /** Default wallpaper: no layer at all. */
 export const DEFAULT_WALLPAPER: WallpaperSettings = {
-  kind: 'none', value: '', fit: 'cover', blur: 0, dim: 0,
+  kind: 'none', value: '', fit: 'cover', dim: 0,
 }
 
 /** Default surface mode: untouched product tokens. */
@@ -59,7 +57,6 @@ const wallpaperSchema = z.object({
   kind: z.union([...WALLPAPER_KINDS]).default(DEFAULT_WALLPAPER.kind),
   value: z.string().default(DEFAULT_WALLPAPER.value),
   fit: z.union([...WALLPAPER_FITS]).default(DEFAULT_WALLPAPER.fit),
-  blur: z.number().min(0).max(24).default(DEFAULT_WALLPAPER.blur),
   dim: z.number().min(0).max(0.7).default(DEFAULT_WALLPAPER.dim),
 })
 
