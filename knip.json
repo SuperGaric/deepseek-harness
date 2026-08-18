@@ -692,7 +692,8 @@
         "tests/**/*.tsx"
       ],
       "ignoreDependencies": [
-        "@deepseek-ai/dsh-client-ui-theme"
+        "@deepseek-ai/dsh-client-ui-theme",
+        "@deepseek-ai/dsh-client-ui-appearance"
       ]
     },
     "packages/client/ui-settings": {

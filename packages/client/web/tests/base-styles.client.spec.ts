@@ -1,17 +1,21 @@
 /**
- * Shell base sheet contract, asserted against the CSS text on disk: base.css is
- * where the ui-theme token sheets enter the bundle, every sheet it names exists,
- * and scrollbar.css follows design-platform.css because it reads that sheet's
- * tokens.
+ * Web shell base sheet contract, asserted against the CSS text on disk:
+ * base.css is where the ui-theme token sheets and the ui-appearance wallpaper
+ * sheet enter the bundle, every sheet it names exists, and scrollbar.css
+ * follows design-platform.css because it reads that sheet's tokens.
  */
 import { existsSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 const THEME_PACKAGE = '@deepseek-ai/dsh-client-ui-theme'
+const APPEARANCE_PACKAGE = '@deepseek-ai/dsh-client-ui-appearance'
 const baseCss = readFileSync(fileURLToPath(new URL('../src/base.css', import.meta.url)), 'utf8')
 const themeManifest = JSON.parse(
   readFileSync(fileURLToPath(new URL('../../ui-theme/package.json', import.meta.url)), 'utf8'),
+) as { exports: Record<string, string>; files: string[] }
+const appearanceManifest = JSON.parse(
+  readFileSync(fileURLToPath(new URL('../../ui-appearance/package.json', import.meta.url)), 'utf8'),
 ) as { exports: Record<string, string>; files: string[] }
 
 /**
@@ -33,9 +37,13 @@ function importOrder(css: string): string[] {
  * @param specifier - import specifier from base.css.
  * @returns absolute path of the file the specifier names.
  */
-function resolveThemeSheet(specifier: string): string {
-  const name = specifier.slice(`${THEME_PACKAGE}/styles/`.length)
-  return fileURLToPath(new URL(`../../ui-theme/src/styles/${name}`, import.meta.url))
+function resolveStyleSheet(specifier: string): string {
+  if (specifier.startsWith(`${THEME_PACKAGE}/styles/`)) {
+    const name = specifier.slice(`${THEME_PACKAGE}/styles/`.length)
+    return fileURLToPath(new URL(`../../ui-theme/src/styles/${name}`, import.meta.url))
+  }
+  const name = specifier.slice(`${APPEARANCE_PACKAGE}/styles/`.length)
+  return fileURLToPath(new URL(`../../ui-appearance/src/styles/${name}`, import.meta.url))
 }
 
 const imports = importOrder(baseCss)
@@ -46,11 +54,19 @@ describe('web shell base.css', () => {
     expect(themeManifest.files).toContain('lib/styles')
   })
 
-  it('imports every sheet from the theme package and each one exists', () => {
+  it('publishes the wallpaper sheet from the built artifact plane', () => {
+    expect(appearanceManifest.exports['./styles/*']).toBe('./lib/styles/*')
+    expect(appearanceManifest.files).toContain('lib/styles')
+  })
+
+  it('imports every sheet from a known styles package and each one exists', () => {
     expect(imports.length).toBeGreaterThan(0)
     for (const specifier of imports) {
-      expect(specifier.startsWith(`${THEME_PACKAGE}/styles/`), specifier).toBe(true)
-      expect(existsSync(resolveThemeSheet(specifier)), specifier).toBe(true)
+      expect(
+        specifier.startsWith(`${THEME_PACKAGE}/styles/`) || specifier.startsWith(`${APPEARANCE_PACKAGE}/styles/`),
+        specifier,
+      ).toBe(true)
+      expect(existsSync(resolveStyleSheet(specifier)), specifier).toBe(true)
     }
   })
 
@@ -62,5 +78,13 @@ describe('web shell base.css', () => {
     const scrollbar = imports.indexOf(`${THEME_PACKAGE}/styles/scrollbar.css`)
     expect(platform).toBeGreaterThanOrEqual(0)
     expect(scrollbar).toBeGreaterThan(platform)
+  })
+
+  it('imports the wallpaper sheet after every token sheet it reads', () => {
+    // The wallpaper layer references `--dsw-alias-bg-base`, so the token
+    // sheets must land first in the cascade.
+    const wallpaper = imports.indexOf(`${APPEARANCE_PACKAGE}/styles/wallpaper.css`)
+    const lastToken = imports.lastIndexOf(`${THEME_PACKAGE}/styles/shiki.css`)
+    expect(wallpaper).toBeGreaterThan(lastToken)
   })
 })

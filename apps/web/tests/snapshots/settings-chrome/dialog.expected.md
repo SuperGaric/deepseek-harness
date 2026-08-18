@@ -7,6 +7,9 @@
     - button "模型":
       - img
       - text: 模型
+    - button "背景与外观":
+      - img
+      - text: 背景与外观
     - button "插件":
       - img
       - text: 插件

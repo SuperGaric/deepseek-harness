@@ -185,6 +185,11 @@
     - id: ui-theme
       name: '@deepseek-ai/dsh-client-ui-theme'
 
+    # Wallpaper + panel transparency: the Background & Appearance settings page,
+    # the wallpaper DOM layer, and the durable appearance section.
+    - id: ui-appearance
+      name: '@deepseek-ai/dsh-client-ui-appearance'
+
     - id: locale
       name: '@deepseek-ai/dsh-client-locale'
 

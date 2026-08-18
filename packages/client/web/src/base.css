@@ -7,6 +7,9 @@
 @import '@deepseek-ai/dsh-client-ui-theme/styles/scrollbar.css';
 @import '@deepseek-ai/dsh-client-ui-theme/styles/gradient-shadow-text.css';
 @import '@deepseek-ai/dsh-client-ui-theme/styles/shiki.css';
+/* The appearance package's wallpaper layer rides body custom properties, so it
+   must land after every token sheet that defines those properties. */
+@import '@deepseek-ai/dsh-client-ui-appearance/styles/wallpaper.css';
 
 html,
 body,

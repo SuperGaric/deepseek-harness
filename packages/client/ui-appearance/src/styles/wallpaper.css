@@ -1,0 +1,35 @@
+/* Wallpaper layer: body-scoped variables driven by the appearance presenter.
+   The layer rides body::before/::after behind the app's own surfaces, so the
+   base token backgrounds (propagated from body to the canvas) stay untouched
+   and translucent token overrides reveal the wallpaper through them. */
+
+body {
+  --dshw-image: none;
+  --dshw-size: cover;
+  --dshw-repeat: no-repeat;
+  --dshw-blur: 0px;
+  --dshw-dim: 0;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--dsw-alias-bg-base);
+  background-image: var(--dshw-image);
+  background-size: var(--dshw-size);
+  background-repeat: var(--dshw-repeat);
+  background-position: center;
+  filter: blur(var(--dshw-blur));
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: rgb(10 12 16 / var(--dshw-dim));
+}
